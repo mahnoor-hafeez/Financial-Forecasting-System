@@ -1,0 +1,17 @@
+fastapi
+uvicorn
+pymongo
+pandas
+numpy
+yfinance
+feedparser
+textblob
+ta
+python-dotenv
+# Forecasting model dependencies
+statsmodels
+scikit-learn
+tensorflow
+keras
+scipy
+plotly
