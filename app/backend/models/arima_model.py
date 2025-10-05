@@ -90,7 +90,10 @@ class ARIMAForecaster:
             raise ValueError("Model must be trained first")
             
         forecast = self.fitted_model.forecast(steps=steps)
-        return forecast
+        # Convert to numpy array if it's a pandas Series
+        if hasattr(forecast, 'values'):
+            return forecast.values
+        return np.array(forecast)
     
     def evaluate(self, test_data, target_column='Close'):
         """Evaluate model performance"""

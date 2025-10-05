@@ -7,6 +7,9 @@ import warnings
 warnings.filterwarnings('ignore')
 
 # Import models
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 from arima_model import ARIMAForecaster
 from moving_average_model import MovingAverageForecaster
 from var_model import VARForecaster
@@ -15,6 +18,7 @@ from gru_model import GRUForecaster
 from ensemble_model import EnsembleForecaster
 
 # Import database connection
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from db_config import db
 
 class ForecastService:

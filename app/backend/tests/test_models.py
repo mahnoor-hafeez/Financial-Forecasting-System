@@ -212,21 +212,30 @@ class TestModels(unittest.TestCase):
         model = MovingAverageForecaster(window_size=20)
         model.train(self.train_data)
         
-        with tempfile.NamedTemporaryFile(suffix='.pkl', delete=False) as tmp:
-            import pickle
-            with open(tmp.name, 'wb') as f:
+        # Create temporary file
+        import pickle
+        tmp_file = tempfile.NamedTemporaryFile(suffix='.pkl', delete=False)
+        tmp_file.close()
+        
+        try:
+            # Save model
+            with open(tmp_file.name, 'wb') as f:
                 pickle.dump(model, f)
             
             # Load model
-            with open(tmp.name, 'rb') as f:
+            with open(tmp_file.name, 'rb') as f:
                 loaded_model = pickle.load(f)
             
             # Test that loaded model works
             predictions = loaded_model.predict(steps=5)
             self.assertEqual(len(predictions), 5)
             
+        finally:
             # Clean up
-            os.unlink(tmp.name)
+            try:
+                os.unlink(tmp_file.name)
+            except (PermissionError, OSError):
+                pass  # Ignore permission errors on Windows
 
 if __name__ == '__main__':
     unittest.main()

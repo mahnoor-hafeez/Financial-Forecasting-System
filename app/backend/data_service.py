@@ -129,6 +129,27 @@ def fetch_and_store(symbol: str):
 
 # -------- Retrieve Sample --------
 def get_data(symbol: str):
+    from datetime import datetime
+    
     prices = list(db.historical_data.find({"Symbol": symbol}, {"_id": 0}).limit(10))
     news = list(db.sentiments.find({"symbol": symbol}, {"_id": 0}).limit(5))
+    
+    # Convert datetime objects to ISO format strings for JSON serialization
+    def convert_datetime(obj):
+        import math
+        if isinstance(obj, datetime):
+            return obj.isoformat()
+        elif isinstance(obj, dict):
+            return {k: convert_datetime(v) for k, v in obj.items()}
+        elif isinstance(obj, list):
+            return [convert_datetime(item) for item in obj]
+        elif isinstance(obj, float) and (math.isnan(obj) or math.isinf(obj)):
+            return None  # Convert NaN/Inf to None for JSON compatibility
+        else:
+            return obj
+    
+    # Convert all datetime objects in the response
+    prices = convert_datetime(prices)
+    news = convert_datetime(news)
+    
     return {"symbol": symbol, "sample_prices": prices, "sample_news": news}

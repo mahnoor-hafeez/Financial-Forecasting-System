@@ -179,7 +179,28 @@ class LSTMForecaster:
     
     def load_model(self, filepath):
         """Load model from file"""
-        self.model = tf.keras.models.load_model(filepath)
+        # Handle Keras metrics deserialization issue
+        import tensorflow as tf
+        try:
+            self.model = tf.keras.models.load_model(filepath)
+        except Exception as e:
+            # Try loading with custom objects for metrics
+            try:
+                self.model = tf.keras.models.load_model(
+                    filepath, 
+                    custom_objects={'mse': tf.keras.metrics.mean_squared_error}
+                )
+            except:
+                # If still fails, try without metrics
+                self.model = tf.keras.models.load_model(
+                    filepath, 
+                    compile=False
+                )
+                # Recompile with simple optimizer
+                self.model.compile(
+                    optimizer='adam',
+                    loss='mse'
+                )
     
     def get_model_info(self):
         """Get model parameters"""
