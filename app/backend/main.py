@@ -135,8 +135,8 @@ def get_forecast(symbol: str, horizon: int = 24):
 def health_check():
     """Health check endpoint"""
     try:
-        # Test database connection
-        db.admin.command('ping')
+        # Test database connection by checking if we can access collections
+        db.historical_data.count_documents({})
         return {
             "status": "healthy",
             "backend": "FastAPI running",

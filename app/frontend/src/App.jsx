@@ -235,10 +235,10 @@ function App() {
               />
             </Box>
 
-            {/* Control Panel - Below Chart */}
+            {/* Control Panel - Below Chart - Full Width */}
             <Grid container spacing={3}>
-              {/* Left Column - Trading Controls */}
-              <Grid item xs={12} md={4}>
+              {/* Trading Controls - Full Width */}
+              <Grid item xs={12}>
                 <Paper sx={{
                   p: 3,
                   backgroundColor: 'rgba(26, 26, 26, 0.95)',
@@ -248,9 +248,9 @@ function App() {
                   <Typography variant="h6" sx={{ mb: 2, color: '#2196f3' }}>
                     🎯 TRADING CONTROLS
                   </Typography>
-                  
+
                   <Grid container spacing={2}>
-                    <Grid item xs={12}>
+                    <Grid item xs={12} md={3}>
                       <FormControl fullWidth size="small">
                         <InputLabel>Instrument</InputLabel>
                         <Select
@@ -266,8 +266,8 @@ function App() {
                         </Select>
                       </FormControl>
                     </Grid>
-                    
-                    <Grid item xs={12}>
+
+                    <Grid item xs={12} md={3}>
                       <FormControl fullWidth size="small">
                         <InputLabel>Horizon</InputLabel>
                         <Select
@@ -283,7 +283,7 @@ function App() {
                       </FormControl>
                     </Grid>
 
-                    <Grid item xs={12}>
+                    <Grid item xs={12} md={3}>
                       <FormControl fullWidth size="small">
                         <InputLabel>Data Range</InputLabel>
                         <Select
@@ -298,8 +298,8 @@ function App() {
                         </Select>
                       </FormControl>
                     </Grid>
-                    
-                    <Grid item xs={12}>
+
+                    <Grid item xs={12} md={3}>
                       <Button
                         variant="contained"
                         size="large"
@@ -320,8 +320,8 @@ function App() {
                 </Paper>
               </Grid>
 
-              {/* Right Column - Metrics */}
-              <Grid item xs={12} md={8}>
+              {/* Metrics Panel - Full Width */}
+              <Grid item xs={12}>
                 <MetricsPanel
                   forecastData={forecastData}
                   sentimentData={sentimentData}
