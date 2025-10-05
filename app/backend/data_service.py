@@ -91,7 +91,7 @@ def fetch_sentiment(symbol: str, limit=20):
                 published_date = datetime.strptime(entry.published, '%a, %d %b %Y %H:%M:%S %Z')
             except:
                 published_date = datetime.now()
-        
+            
         sentiments.append({
             "symbol": symbol,
             "title": entry.title,
