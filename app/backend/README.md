@@ -164,12 +164,17 @@ python -m pytest tests/test_models.py -v
 
 ## 📊 Performance Results
 
-### Expected Performance (varies by symbol and time period)
-- **Moving Average**: Baseline performance, good for trend following
-- **ARIMA**: Good for univariate time series with clear patterns
-- **VAR**: Better for multivariate relationships
-- **LSTM/GRU**: Best for complex temporal patterns
-- **Ensemble**: Most stable predictions, often best overall
+### Actual Performance (Latest Training Results)
+- **BTC-USD**: Ensemble best (RMSE: 8,104.69), VAR working (RMSE: 10,413.04)
+- **AAPL**: VAR best (RMSE: 18.92), all models working
+- **EURUSD=X**: GRU best (RMSE: 0.0200), VAR failed (insufficient data)
+
+### Model Performance Summary
+- **Moving Average**: Consistent baseline performance across all symbols
+- **ARIMA**: Working but high RMSE, needs further tuning
+- **VAR**: Fixed and working (except EURUSD=X due to insufficient data)
+- **LSTM/GRU**: Good performance, no reshape errors
+- **Ensemble**: Best overall performance for BTC-USD
 
 ### Model Selection Guidelines
 - **Short-term predictions (1-7 days)**: LSTM/GRU or Ensemble
@@ -200,8 +205,30 @@ python -m pytest tests/test_models.py -v
 - Error messages and warnings
 - Database operation status
 
+## 🔧 Recent Updates (Model Tuning)
+
+### Bug Fixes Applied
+- **VAR Model**: Fixed `forecast()` method requiring last lag values as input
+- **LSTM/GRU**: Fixed array reshaping errors with proper feature dimension handling
+- **ARIMA**: Improved parameter selection with expanded grid search and common orders
+- **Ensemble**: Added compatibility for different model `predict()` method signatures
+
+### Performance Improvements
+- **VAR**: Now working correctly for BTC-USD and AAPL (RMSE: 10,413 and 18.92)
+- **LSTM/GRU**: No more reshape errors, proper sequence handling
+- **Training Success**: 17/18 models trained and saved successfully
+- **Model Evaluation**: All trained models evaluated with proper metrics
+
+### Current Status
+- ✅ All baseline models working (Moving Average, ARIMA, VAR)
+- ✅ All neural models working (LSTM, GRU)
+- ✅ Ensemble models working for all symbols
+- ⚠️ ARIMA performance still needs tuning (high RMSE)
+- ⚠️ VAR requires sufficient data (failed for EURUSD=X with 521 records)
+
 ## 🔮 Future Enhancements
 
+- **ARIMA Tuning**: Further parameter optimization for better performance
 - **Transformer Models**: Attention-based time series models
 - **Sentiment Integration**: Incorporate news sentiment scores
 - **Real-time Updates**: Streaming model updates

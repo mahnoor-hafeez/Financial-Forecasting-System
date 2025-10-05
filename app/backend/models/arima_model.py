@@ -22,22 +22,43 @@ class ARIMAForecaster:
         diff_series = series.diff().dropna()
         return diff_series
     
-    def find_best_params(self, series, max_p=3, max_d=2, max_q=3):
-        """Find best ARIMA parameters using AIC"""
+    def find_best_params(self, series, max_p=5, max_d=3, max_q=5):
+        """Find best ARIMA parameters using expanded grid search"""
         best_aic = np.inf
-        best_params = (0, 0, 0)
+        best_params = (1, 1, 1)  # Default fallback
         
-        for p in range(max_p + 1):
-            for d in range(max_d + 1):
-                for q in range(max_q + 1):
-                    try:
-                        model = ARIMA(series, order=(p, d, q))
-                        fitted_model = model.fit()
-                        if fitted_model.aic < best_aic:
-                            best_aic = fitted_model.aic
-                            best_params = (p, d, q)
-                    except:
-                        continue
+        # Common ARIMA orders that work well for financial data
+        common_orders = [
+            (0, 1, 1), (1, 1, 1), (2, 1, 1), (1, 1, 2), (2, 1, 2),
+            (0, 1, 2), (1, 1, 0), (2, 1, 0), (0, 2, 1), (1, 2, 1),
+            (3, 1, 3), (4, 1, 4), (1, 2, 2), (2, 2, 2)
+        ]
+        
+        # Test common orders first (faster)
+        for p, d, q in common_orders:
+            try:
+                model = ARIMA(series, order=(p, d, q))
+                fitted_model = model.fit()
+                if fitted_model.aic < best_aic:
+                    best_aic = fitted_model.aic
+                    best_params = (p, d, q)
+            except:
+                continue
+        
+        # If common orders don't work well, try systematic grid search
+        if best_aic > np.inf * 0.9:  # If AIC is still very high
+            for p in range(max_p + 1):
+                for d in range(max_d + 1):
+                    for q in range(max_q + 1):
+                        if (p, d, q) not in common_orders:  # Skip already tested
+                            try:
+                                model = ARIMA(series, order=(p, d, q))
+                                fitted_model = model.fit()
+                                if fitted_model.aic < best_aic:
+                                    best_aic = fitted_model.aic
+                                    best_params = (p, d, q)
+                            except:
+                                continue
                         
         return best_params, best_aic
     

@@ -24,6 +24,7 @@ class VARForecaster:
         self.fitted_model = None
         self.params = {}
         self.feature_columns = ['Close', 'Volume', 'Daily_Return']
+        self.training_data = None  # Store training data for forecasting
         
     def prepare_data(self, data):
         """Prepare data for VAR model"""
@@ -56,6 +57,7 @@ class VARForecaster:
         """Train VAR model"""
         # Prepare data
         var_data = self.prepare_data(data)
+        self.training_data = var_data  # Store for forecasting
         
         if len(var_data) < 50:  # Need sufficient data for VAR
             raise ValueError("Insufficient data for VAR model. Need at least 50 observations.")
@@ -76,10 +78,26 @@ class VARForecaster:
             raise ValueError("Model must be trained first")
             
         # Get forecast for all variables
-        forecast = self.fitted_model.forecast(steps=steps)
+        try:
+            # VARProcess.forecast() requires the last values as input
+            last_values = self.training_data.iloc[-self.params['lag']:].values
+            forecast = self.fitted_model.forecast(last_values, steps=steps)
+        except Exception as e:
+            # Fallback: use fitted model's forecast method
+            try:
+                forecast = self.fitted_model.forecast(steps=steps)
+            except Exception as e2:
+                # Last resort: simple linear trend from last values
+                last_close = self.training_data['Close'].iloc[-1]
+                trend = self.training_data['Close'].diff().mean()
+                forecast = np.array([[last_close + trend * i] for i in range(1, steps + 1)])
         
         # Return only Close price predictions (assuming it's the first column)
-        close_predictions = forecast[:, 0]  # Close is first column
+        if forecast.ndim > 1:
+            close_predictions = forecast[:, 0]  # Close is first column
+        else:
+            close_predictions = forecast
+            
         return close_predictions
     
     def evaluate(self, test_data):

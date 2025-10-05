@@ -112,8 +112,20 @@ class LSTMForecaster:
         # Prepare data
         scaled_data = self.prepare_data(data)
         
-        # Get last sequence
-        last_sequence = scaled_data[-self.sequence_length:].reshape(1, self.sequence_length, scaled_data.shape[1])
+        # Ensure we have enough data for sequence length
+        if len(scaled_data) < self.sequence_length:
+            raise ValueError(f"Insufficient data for sequence length {self.sequence_length}")
+        
+        # Get last sequence with proper feature dimension
+        last_sequence_data = scaled_data[-self.sequence_length:]
+        
+        # Ensure correct shape for reshaping
+        if last_sequence_data.ndim == 1:
+            # If 1D, reshape to 2D with 1 feature
+            last_sequence_data = last_sequence_data.reshape(-1, 1)
+        
+        # Reshape for LSTM input: (batch_size, sequence_length, features)
+        last_sequence = last_sequence_data.reshape(1, self.sequence_length, last_sequence_data.shape[1])
         
         predictions = []
         current_sequence = last_sequence.copy()
