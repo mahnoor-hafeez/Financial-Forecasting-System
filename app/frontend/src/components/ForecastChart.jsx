@@ -48,7 +48,7 @@ const ForecastChart = ({ historicalData, forecastData, symbol }) => {
       },
       hoverinfo: 'x+y',
       hovertemplate: 
-        '<b>%{x}</b><br>' +
+        '<b>%{x|%B %d, %Y}</b><br>' +
         'Open: $%{open}<br>' +
         'High: $%{high}<br>' +
         'Low: $%{low}<br>' +
@@ -76,7 +76,7 @@ const ForecastChart = ({ historicalData, forecastData, symbol }) => {
       opacity: 0.8,
       hoverinfo: 'x+y',
       hovertemplate: 
-        '<b>%{x}</b><br>' +
+        '<b>%{x|%B %d, %Y}</b><br>' +
         'Predicted: $%{y:.4f}<br>' +
         '🔮 AI Forecast<br>' +
         '<extra></extra>'
@@ -98,7 +98,11 @@ const ForecastChart = ({ historicalData, forecastData, symbol }) => {
           showgrid: true,
           gridcolor: '#333333',
           type: 'date',
-          tickformat: '%b %d, %H:%M',
+          tickformat: '%b %Y',        // Show "Jan 2023" instead of "Jan 01"
+          dtick: 'M3',               // Show every 3 months
+          tickangle: -45,            // Rotate labels for readability
+          nticks: 8,                 // Limit number of ticks
+          tickmode: 'auto',          // Auto-adjust spacing
           tickfont: { color: '#AAA', size: 12 },
           titlefont: { color: '#AAA', size: 14 }
         },

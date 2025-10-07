@@ -4,6 +4,8 @@ import numpy as np
 import feedparser
 from textblob import TextBlob
 from db_config import db
+from datetime import datetime
+from typing import Dict, List, Optional, Any
 
 # -------- Market Data --------
 def fetch_market_data(symbol: str):
@@ -153,3 +155,49 @@ def get_data(symbol: str):
     news = convert_datetime(news)
     
     return {"symbol": symbol, "sample_prices": prices, "sample_news": news}
+
+# DataService class for scheduler integration
+class DataService:
+    """Service class for data operations"""
+    
+    def __init__(self):
+        self.db = db
+    
+    def fetch_market_data(self, symbol: str, period: str = "1y") -> Optional[pd.DataFrame]:
+        """Fetch market data for a symbol"""
+        return fetch_market_data(symbol)
+    
+    def fetch_sentiment_data(self) -> Optional[List[Dict]]:
+        """Fetch sentiment data"""
+        return fetch_sentiment_data()
+    
+    def store_market_data(self, symbol: str, data: pd.DataFrame) -> bool:
+        """Store market data in database"""
+        try:
+            # Convert DataFrame to list of dictionaries
+            records = data.reset_index().to_dict('records')
+            
+            # Store in database
+            for record in records:
+                record['Symbol'] = symbol
+                record['Date'] = record['Date'].isoformat() if hasattr(record['Date'], 'isoformat') else record['Date']
+                self.db.historical_data.insert_one(record)
+            
+            return True
+        except Exception as e:
+            print(f"Error storing market data: {e}")
+            return False
+    
+    def store_sentiment_data(self, data: List[Dict]) -> bool:
+        """Store sentiment data in database"""
+        try:
+            for item in data:
+                self.db.sentiments.insert_one(item)
+            return True
+        except Exception as e:
+            print(f"Error storing sentiment data: {e}")
+            return False
+    
+    def get_data(self, symbol: str) -> List[Dict]:
+        """Get data for a symbol"""
+        return get_data(symbol)

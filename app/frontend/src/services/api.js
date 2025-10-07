@@ -41,9 +41,9 @@ export const fetchHistoricalData = async (symbol, limit = 100) => {
   }
 };
 
-export const fetchForecast = async (symbol, horizon = 24) => {
+export const fetchForecast = async (symbol, horizon = 24, model = 'ensemble') => {
   try {
-    const response = await axios.get(`${BASE_URL}/forecast/${symbol}?horizon=${horizon}`);
+    const response = await axios.get(`${BASE_URL}/forecast/${symbol}?horizon=${horizon}&model=${model}`);
     return response.data;
   } catch (error) {
     throw new Error(`Failed to fetch forecast for ${symbol}: ${error.message}`);

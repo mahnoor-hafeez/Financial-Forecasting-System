@@ -81,12 +81,24 @@ class ForecastService:
             
             predictions = model.predict(steps)
             
+            # Calculate metrics using recent data
+            actual = data['Close'].tail(steps).values
+            if len(predictions) == len(actual) and len(actual) > 0:
+                rmse = np.sqrt(np.mean((predictions - actual) ** 2))
+                mae = np.mean(np.abs(predictions - actual))
+                mape = np.mean(np.abs((actual - predictions) / actual)) * 100
+                metrics = {"rmse": rmse, "mae": mae, "mape": mape}
+            else:
+                metrics = {"rmse": None, "mae": None, "mape": None}
+            
             return {
                 "model": "Moving Average",
+                "model_name": "Moving Average",
                 "symbol": symbol,
                 "timestamp": datetime.now().isoformat(),
                 "predictions": predictions.tolist() if hasattr(predictions, 'tolist') else list(predictions),
                 "steps": steps,
+                "metrics": metrics,
                 "model_info": model.get_model_info()
             }
             
@@ -101,12 +113,24 @@ class ForecastService:
             
             predictions = model.predict(steps)
             
+            # Calculate metrics using recent data
+            actual = data['Close'].tail(steps).values
+            if len(predictions) == len(actual) and len(actual) > 0:
+                rmse = np.sqrt(np.mean((predictions - actual) ** 2))
+                mae = np.mean(np.abs(predictions - actual))
+                mape = np.mean(np.abs((actual - predictions) / actual)) * 100
+                metrics = {"rmse": rmse, "mae": mae, "mape": mape}
+            else:
+                metrics = {"rmse": None, "mae": None, "mape": None}
+            
             return {
                 "model": "ARIMA",
+                "model_name": "ARIMA",
                 "symbol": symbol,
                 "timestamp": datetime.now().isoformat(),
                 "predictions": predictions.tolist() if hasattr(predictions, 'tolist') else list(predictions),
                 "steps": steps,
+                "metrics": metrics,
                 "model_info": model.get_model_info()
             }
             
@@ -121,12 +145,24 @@ class ForecastService:
             
             predictions = model.predict(steps)
             
+            # Calculate metrics using recent data
+            actual = data['Close'].tail(steps).values
+            if len(predictions) == len(actual) and len(actual) > 0:
+                rmse = np.sqrt(np.mean((predictions - actual) ** 2))
+                mae = np.mean(np.abs(predictions - actual))
+                mape = np.mean(np.abs((actual - predictions) / actual)) * 100
+                metrics = {"rmse": rmse, "mae": mae, "mape": mape}
+            else:
+                metrics = {"rmse": None, "mae": None, "mape": None}
+            
             return {
                 "model": "VAR",
+                "model_name": "VAR",
                 "symbol": symbol,
                 "timestamp": datetime.now().isoformat(),
                 "predictions": predictions.tolist() if hasattr(predictions, 'tolist') else list(predictions),
                 "steps": steps,
+                "metrics": metrics,
                 "model_info": model.get_model_info()
             }
             
@@ -141,12 +177,24 @@ class ForecastService:
             
             predictions = model.predict(data, steps)
             
+            # Calculate metrics using recent data
+            actual = data['Close'].tail(steps).values
+            if len(predictions) == len(actual) and len(actual) > 0:
+                rmse = np.sqrt(np.mean((predictions - actual) ** 2))
+                mae = np.mean(np.abs(predictions - actual))
+                mape = np.mean(np.abs((actual - predictions) / actual)) * 100
+                metrics = {"rmse": rmse, "mae": mae, "mape": mape}
+            else:
+                metrics = {"rmse": None, "mae": None, "mape": None}
+            
             return {
                 "model": "LSTM",
+                "model_name": "LSTM",
                 "symbol": symbol,
                 "timestamp": datetime.now().isoformat(),
                 "predictions": predictions.tolist() if hasattr(predictions, 'tolist') else list(predictions),
                 "steps": steps,
+                "metrics": metrics,
                 "model_info": model.get_model_info()
             }
             
@@ -161,12 +209,24 @@ class ForecastService:
             
             predictions = model.predict(data, steps)
             
+            # Calculate metrics using recent data
+            actual = data['Close'].tail(steps).values
+            if len(predictions) == len(actual) and len(actual) > 0:
+                rmse = np.sqrt(np.mean((predictions - actual) ** 2))
+                mae = np.mean(np.abs(predictions - actual))
+                mape = np.mean(np.abs((actual - predictions) / actual)) * 100
+                metrics = {"rmse": rmse, "mae": mae, "mape": mape}
+            else:
+                metrics = {"rmse": None, "mae": None, "mape": None}
+            
             return {
                 "model": "GRU",
+                "model_name": "GRU",
                 "symbol": symbol,
                 "timestamp": datetime.now().isoformat(),
                 "predictions": predictions.tolist() if hasattr(predictions, 'tolist') else list(predictions),
                 "steps": steps,
+                "metrics": metrics,
                 "model_info": model.get_model_info()
             }
             
@@ -248,3 +308,75 @@ class ForecastService:
             
         except Exception as e:
             return {"error": str(e)}
+    
+    def retrain_models(self, symbol):
+        """Retrain all models for a symbol"""
+        try:
+            # Load fresh data
+            data = self.load_data(symbol)
+            
+            # Initialize models
+            models = {
+                'moving_average': MovingAverageForecaster(),
+                'arima': ARIMAForecaster(),
+                'var': VARForecaster(),
+                'lstm': LSTMForecaster(),
+                'gru': GRUForecaster()
+            }
+            
+            retrained_models = {}
+            
+            for model_name, model in models.items():
+                try:
+                    # Train the model
+                    model.train(data)
+                    
+                    # Save the model
+                    self.save_model(symbol, model_name, model)
+                    
+                    # Generate predictions for evaluation
+                    predictions = model.predict(data, steps=24)
+                    
+                    # Calculate metrics
+                    actual = data['Close'].tail(24).values
+                    if len(predictions) == len(actual):
+                        rmse = np.sqrt(np.mean((predictions - actual) ** 2))
+                        mae = np.mean(np.abs(predictions - actual))
+                        mape = np.mean(np.abs((actual - predictions) / actual)) * 100
+                    else:
+                        rmse = mae = mape = None
+                    
+                    # Store performance metrics
+                    performance_record = {
+                        'symbol': symbol,
+                        'model_name': model_name,
+                        'timestamp': datetime.now(),
+                        'metrics': {
+                            'rmse': rmse,
+                            'mae': mae,
+                            'mape': mape
+                        },
+                        'model_params': getattr(model, 'params', {}),
+                        'retrain_date': datetime.now()
+                    }
+                    
+                    db.model_performance.insert_one(performance_record)
+                    retrained_models[model_name] = {
+                        'status': 'success',
+                        'metrics': {'rmse': rmse, 'mae': mae, 'mape': mape}
+                    }
+                    
+                except Exception as e:
+                    retrained_models[model_name] = {
+                        'status': 'failed',
+                        'error': str(e)
+                    }
+            
+            return {
+                'symbol': symbol,
+                'retrain_timestamp': datetime.now().isoformat(),
+                'models': retrained_models
+            }
+            
+        except Exception as e:
+            return {"error": f"Failed to retrain models for {symbol}: {str(e)}"}
